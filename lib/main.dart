@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+
 
 void main() {
   runApp(
@@ -7,9 +9,12 @@ void main() {
        title: "TODO LIST",
         theme: ThemeData(useMaterial3: true),
         home: const TodoPage(),
+
       )
   );
 }
+
+
 
 /// 1. 資料模型:代辦事項->1.標題,2.內容,3.是否完成
 class Todo{
@@ -54,46 +59,73 @@ class _TodoPageState extends State<TodoPage> {
     });
   }
 
+  void _openAddTodoDialog(){
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.noHeader,
+      animType: AnimType.scale,
+      body:  SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+
+            children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Create Todo",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+
+                      )
+                    ),
+                  ),
+                  const SizedBox(height: 16,),
+                  TextField(
+                    controller: _titlecontroller,
+                    decoration: const InputDecoration(
+                      hintText: "Enter TODO title...",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                    const SizedBox(height: 12,),
+                    TextField(
+                    controller: _contentcontroller,
+                    decoration: const InputDecoration(
+                      hintText: "Enter TODO content...",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+              const SizedBox(height: 16,),
+              FilledButton(
+                onPressed: () {
+                  _addTodo();
+                  Navigator.pop(context);
+                },
+                child: const Text("Create"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).show();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("My TODO List")),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddTodoDialog,
+        child: const Icon(Icons.add),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            ///上方:輸入區
-            Row(
-              children: [
-                Expanded(
-                    child:TextField(
-                      controller: _titlecontroller,
-                      decoration: const InputDecoration(
-                        hintText: "Enter TODO title...",
-                        border: OutlineInputBorder(),
-                      ),
-                      // onSubmitted: (_) => _addTodo(),
-                    )
-                ),
-                Expanded(
-                    child:TextField(
-                      controller: _contentcontroller,
-                      decoration: const InputDecoration(
-                        hintText: "Enter TODO content...",
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (_) => _addTodo(),
-                    )
-                )
-              ],
-            ),
-            const SizedBox(width: 8,),
-            FilledButton(
-                onPressed: _addTodo,
-                child: const Text("Create"),
-            ),
-            
             const SizedBox(height: 20),
             Expanded(
                 child: _todos.isEmpty
