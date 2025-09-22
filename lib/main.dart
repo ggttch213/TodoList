@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
-
+import 'package:todolist/repositories/bored_repository.dart';
+import 'package:todolist/data/api_client.dart';
+// WidgetsFlutterBinding.ensureInitialized();
+// await dotenv.load(fileName: ".env");
 
 void main() {
   runApp(
@@ -33,13 +36,16 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
+  late final BoredRepository _repo;
+  bool _loading = false;
+
   final _todos = <Todo>[];                    /// 2. 清單資料
   final _titlecontroller = TextEditingController();/// 3. 輸入框控制
   final _contentcontroller = TextEditingController();
 
-  void _addTodo() {
-    final titletext = _titlecontroller.text.trim();
-    final contenttext = _contentcontroller.text.trim();
+  void _addTodo([String? title,String? content]) {
+    final titletext = (title ?? _titlecontroller.text).trim();
+    final contenttext = (content ?? _contentcontroller.text).trim();
     if (titletext.isEmpty && contenttext.isEmpty) return;
     setState(() {
       _todos.insert(0, Todo(titletext,contenttext));
@@ -66,7 +72,7 @@ class _TodoPageState extends State<TodoPage> {
       animType: AnimType.scale,
       body:  SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
 
@@ -115,9 +121,43 @@ class _TodoPageState extends State<TodoPage> {
 
 
   @override
+  void initState(){
+    super.initState();
+    _repo = BoredRepository(const ApiClient());
+  }
+  Future<void> _addRandomTask() async{
+    if (_loading) return;
+    setState(() => _loading = true);
+    try{
+      final act =await _repo.fetchRandomActivity();
+      debugPrint('before add, todos=${_todos.length}');
+      _addTodo(act.activity, '${act.type} • ${act.accessibility}');
+      debugPrint('after add,  todos=${_todos.length}');
+    } catch(e){
+      if(!mounted) return;
+    } finally{
+    if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titlecontroller.dispose();
+    _contentcontroller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My TODO List")),
+      appBar: AppBar(
+          title: const Text("My TODO List"),
+          actions: [
+            IconButton(onPressed: _loading ? null : _addRandomTask,
+            icon: _loading ? const CircularProgressIndicator() : const Icon(Icons.lightbulb_outline)
+      )
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTodoDialog,
         child: const Icon(Icons.add),

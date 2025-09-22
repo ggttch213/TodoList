@@ -1,4 +1,4 @@
-name: quotes
+name: todolist
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -17,11 +17,16 @@ dependencies:
 
   awesome_dialog: ^3.2.1
   cupertino_icons: ^1.0.8
+  http: ^1.2.2
+  flutter_dotenv: ^5.1.0
+  json_annotation: ^4.9.0
+  shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  build_runner: ^2.4.9
+  json_serializable: ^6.8.0
 
   flutter_lints: ^5.0.0
 
