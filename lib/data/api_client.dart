@@ -7,9 +7,8 @@ class ApiClient {
 
   Future<Map<String,dynamic>> getJson(Uri url) async {
     var response = await http.get(url);
-
     if (response.statusCode != 200){
-     throw Exception('Failed to load data');
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }
 
     var jsonResponse = convert.jsonDecode(response.body) as Map<String,dynamic>;

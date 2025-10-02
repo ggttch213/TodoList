@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:todolist/repositories/bored_repository.dart';
+import 'package:todolist/data/bored_repository.dart';
+import 'package:todolist/data/weather_repository.dart';
 import 'package:todolist/data/api_client.dart';
+import 'package:todolist/widgets/weather_card.dart';
+import 'package:todolist/model/weather.dart';
 // WidgetsFlutterBinding.ensureInitialized();
 // await dotenv.load(fileName: ".env");
 
@@ -36,6 +39,11 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
+  late final WeatherRepository _weatherRepo;
+  final double _lat = 22.6273;   // 先手填測試：高雄
+  final double _lon = 120.3014;
+  final String _apiKey = '920308ec0e58bebccf48e335a9f66069';
+
   late final BoredRepository _repo;
   bool _loading = false;
 
@@ -123,7 +131,9 @@ class _TodoPageState extends State<TodoPage> {
   @override
   void initState(){
     super.initState();
-    _repo = BoredRepository(const ApiClient());
+    final apiClient = const ApiClient(); // 共用一個
+    _repo = BoredRepository(apiClient);
+    _weatherRepo = WeatherRepository(apiClient);
   }
   Future<void> _addRandomTask() async{
     if (_loading) return;
@@ -158,6 +168,7 @@ class _TodoPageState extends State<TodoPage> {
       )
         ],
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTodoDialog,
         child: const Icon(Icons.add),
@@ -166,6 +177,33 @@ class _TodoPageState extends State<TodoPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            FutureBuilder<Weather>(
+                future: _weatherRepo.fetchWeather(lat: _lat, lon: _lon, apiKey: _apiKey),
+                builder: (context,snap){
+                  if (snap.connectionState != ConnectionState.done){
+                    return Column(
+                      children: const [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 8),
+                        Text('Loading weather...'),
+                      ],
+                    );
+                  }
+                  if (snap.hasError){
+                    return const Center(child: Text('Something went wrong'));
+                  }
+                  final w = snap.data!;
+                  return WeatherCard(
+                    dt:w.dt,
+                    sunrise: w.sunrise ,
+                    sunset: w.sunset,
+                    temp: w.temp,
+                    feels_like: w.feels_like,
+                    humidity: w.humidity,
+                    // uvi: w.uvi,
+                  );
+                }
+            ),
             const SizedBox(height: 20),
             Expanded(
                 child: _todos.isEmpty
